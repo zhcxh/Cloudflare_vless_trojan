@@ -95,14 +95,22 @@ fi
 yellow "请确保在Serv00网页设置中已开放3个端口：2个tcp端口、1个udp端口"
 sleep 2
         cd $WORKDIR
+	echo
 	read_ip
+ 	echo
         read_reym
+	echo
 	read_uuid
+ 	echo
         read_vless_port
+	echo
         read_vmess_port
+	echo
         read_hy2_port
+	echo
         sleep 2
         argo_configure
+	echo
         download_and_run_singbox
         get_links
 }
@@ -374,7 +382,7 @@ if [ -e "$(basename ${FILE_MAP[bot]})" ]; then
       args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile boot.log --loglevel info --url http://localhost:$vmess_port"
     fi
     nohup ./"$(basename ${FILE_MAP[bot]})" $args >/dev/null 2>&1 &
-    sleep 2
+    sleep 10
     pgrep -x "$(basename ${FILE_MAP[bot]})" > /dev/null && green "$(basename ${FILE_MAP[bot]}) is running" || { red "$(basename ${FILE_MAP[bot]}) is not running, restarting..."; pkill -x "$(basename ${FILE_MAP[bot]})" && nohup ./"$(basename ${FILE_MAP[bot]})" "${args}" >/dev/null 2>&1 & sleep 2; purple "$(basename ${FILE_MAP[bot]}) restarted"; }
 fi
 sleep 3
@@ -404,8 +412,7 @@ get_links(){
 argodomain=$(get_argodomain)
 echo -e "\e[1;32mArgo域名:\e[1;35m${argodomain}\e[0m\n"
 if [ -z ${argodomain} ]; then
-red "Argo域名生成失败，当前Argo节点不可用"
-yellow "可尝试卸载重置安装，或者只用CDN回源设置现实CDN优选IP"
+red "Argo临时域名暂时未生成，两个Argo节点不可用，其他节点依旧可用"
 fi
 echo
 green "安装进程保活"
@@ -427,7 +434,7 @@ if ! crontab -l 2>/dev/null | grep -q 'serv00keep'; then
 (crontab -l 2>/dev/null; echo "*/2 * * * * if ! ps aux | grep '[c]onfig' > /dev/null; then /bin/bash ${WORKDIR}/serv00keep.sh; fi") | crontab -
 fi
 green "进程保活安装完毕，默认每2秒执行一次，运行 crontab -e 可自行修改cron定时时间" && sleep 2
-ISP=$(curl -s --max-time 2 https://speed.cloudflare.com/meta | awk -F\" '{print $26}' | sed -e 's/ /_/g' || echo "0")
+ISP=$(curl -s --max-time 5 https://speed.cloudflare.com/meta | awk -F\" '{print $26}' | sed -e 's/ /_/g' || echo "0")
 get_name() { if [ "$HOSTNAME" = "s1.ct8.pl" ]; then SERVER="CT8"; else SERVER=$(echo "$HOSTNAME" | cut -d '.' -f 1); fi; echo "$SERVER"; }
 NAME="$ISP-$(get_name)"
 rm -rf jh.txt
@@ -1032,7 +1039,7 @@ menu() {
    red    "0. 退出脚本"
    echo   "========================================================="
 nb=$(echo "$HOSTNAME" | cut -d '.' -f 1 | tr -d 's')
-ym=("cache$nb.serv00.com" "$HOSTNAME" "web$nb.serv00.com")
+ym=("$HOSTNAME" "cache$nb.serv00.com" "web$nb.serv00.com")
 rm -rf $WORKDIR/ip.txt
 for ym in "${ym[@]}"; do
 # 引用frankiejun API
